@@ -3,9 +3,9 @@ import db from "../db/index.js"
 import { type UserInput } from "../schemas/user.schema.js"
 import { usersTable} from "../models/index.js"
 import { eq } from "drizzle-orm"
-import { hashedPassword } from "../utils/index.js"
+import { hashPassword } from "../utils/index.js"
 export const createUser = async (user:UserInput) => {
-  const { hashed, salt } = hashedPassword(user.password)
+  const {  salt, hashed } = hashPassword(user.password)
   return await db.insert(usersTable).values({
     ...user,
     salt,

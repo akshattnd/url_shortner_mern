@@ -1,6 +1,8 @@
 import {Router} from 'express'
-import { createUserSchema } from '../schemas/index.js'
+import { createUserSchema, loginUserSchema, type LoginUserSchema } from '../schemas/index.js'
 import { createUser, getUserByEmail } from '../controllers/user.controler.js'
+import { parsePgNestedArray } from 'drizzle-orm/pg-core'
+import { generateJwtToken, hashPassword } from '../utils/index.js'
 const router = Router()
 
 router.post('/signup', async (req , res)=>{
@@ -32,8 +34,28 @@ router.post('/signup', async (req , res)=>{
     }
      
 })
-// router.post('/login', async (req, res)=>{
-//     const 
-//     const existingUser = 
-// })
+router.post('/login', async (req, res)=>{
+
+    const parsed = await loginUserSchema.safeParseAsync(req.body)
+    if(parsed.error) return res.status(400).json({
+        error:parsed.error.message,
+        message:"validation Error!"
+    })
+    const {email, password} = parsed.data
+    const existingUser = await getUserByEmail(email)
+    if(!existingUser) return res.status(404).json({
+        error:`user with email ${email} does not exisit`
+    }) 
+    const {hashed} = hashPassword(password, existingUser.salt)
+    if(hashed !== existingUser.password){
+        return res.status(400).json({
+            error:"Incorrect Password"
+        })
+    }
+    const token = await generateJwtToken({id:existingUser.id})
+    return res.json({
+        token,
+        message:"Login token generated!"
+    })
+})
 export default router

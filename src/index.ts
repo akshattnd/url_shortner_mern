@@ -1,9 +1,11 @@
 import express from 'express';
 import type  {Application, Request, Response } from 'express'
 import  userRouter from './routes/user.routes.js';
+import { authMiddlware } from './middleware/auth.middleware.js';
 const app:Application = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json())
+app.use(authMiddlware)
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello from Express with TypeScript!');
 });
