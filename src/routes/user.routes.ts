@@ -1,7 +1,6 @@
 import {Router} from 'express'
 import { createUserSchema, loginUserSchema, type LoginUserSchema } from '../schemas/index.js'
-import { createUser, getUserByEmail } from '../controllers/user.controler.js'
-import { parsePgNestedArray } from 'drizzle-orm/pg-core'
+import { createUser, getUserByEmail } from '../controllers/user.controller.js'
 import { generateJwtToken, hashPassword } from '../utils/index.js'
 const router = Router()
 
