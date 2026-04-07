@@ -14,3 +14,9 @@ export const authMiddlware = (req:Request, res:Response, next:NextFunction) =>{
     return next()
 
 }
+export const ensureAuthenticated = (req:Request, res:Response, next:NextFunction) =>{
+    if(!req.user || !req.user.id) return res.status(401).json({
+        error:"Authentication is required to acess this route!"
+    })
+    return next()
+}

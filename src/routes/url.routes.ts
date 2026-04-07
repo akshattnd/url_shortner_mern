@@ -2,14 +2,12 @@ import { Router } from "express";
 import { urlInputSchema } from "../schemas/url.schema.js";
 import { deleteShortcode, getAllTargetUrls, getTargetUrl, getUrlByShortCode, insertUrl } from "../controllers/url.controller.js";
 import { emitWarning } from "node:process";
-import { get } from "node:http";
-import { url } from "node:inspector";
+
+import { ensureAuthenticated } from "../middleware/auth.middleware.js";
 const router = Router()
-router.post("/shorten", async (req, res) => {
+router.post("/shorten", ensureAuthenticated,  async (req, res) => {
     const userId = req.user?.id!;
-    if(!userId) return res.status(404).json({
-        error:"Authentication Required!"
-    })
+
     const parsed = await urlInputSchema.safeParseAsync(req.body)
     if(parsed.error) return res.status(400).json({
         error:parsed.error.message
@@ -27,35 +25,23 @@ router.post("/shorten", async (req, res) => {
     })
 
 })
-router.get('/', async (req, res)=>{
+router.get('/', ensureAuthenticated, async (req, res)=>{
     const userId = req.user?.id!;
-    if(!userId) return res.status(404).json({
-        error:"Authentication Required!"
-    })
      const urls = getAllTargetUrls(userId);
      return res.json({
         data:urls,
         messsage:"urls fetched!"
      })
 })
-router.delete("/:shortcode", async (req, res)=>{
-    const userId = req.user?.id!;
-    if(!userId) return res.status(404).json({
-        error:"Authentication Required!"
-    })
-    const shortcode = req.params.shortcode
-
-    await deleteShortcode(shortcode)
+router.delete("/:shortcode",ensureAuthenticated, async (req, res)=>{
+    const shortcode = req.params.shortcode as string
+    await deleteShortcode(shortcode )
     return res.json({
         message:"Deleted Successfully!"
     })
 })
-router.get("/:shortcode", async (req, res)=>{
-    const userId = req.user?.id!;
-    if(!userId) return res.status(404).json({
-        error:"Authentication Required!"
-    })
-    const shortcode = req.params.shortcode
+router.get("/:shortcode",ensureAuthenticated, async (req, res)=>{
+    const shortcode = req.params.shortcode as string
     const urlTable = await getUrlByShortCode(shortcode)
     if(!urlTable) return res.status(400).json({
         error:`url don't exist for given ${shortcode} short code`

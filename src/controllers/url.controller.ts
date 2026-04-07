@@ -4,7 +4,7 @@ import { urlsTable } from "../models/index.js"
 import { nanoid } from "nanoid"
 import { and, eq } from "drizzle-orm"
 export const insertUrl = async (url:string, userId:string) =>{
-   const [data] =  await db.insert(urlsTable).values({
+   const data =  await db.insert(urlsTable).values({
         targetUrl:url,
         shortCode:nanoid(7),
         userId,
